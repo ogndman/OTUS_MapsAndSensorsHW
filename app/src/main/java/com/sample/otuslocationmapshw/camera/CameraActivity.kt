@@ -21,6 +21,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.common.util.concurrent.ListenableFuture
@@ -91,7 +92,7 @@ class CameraActivity : AppCompatActivity() {
             sensorManager.registerListener(
                 sensorEventListener,
                 it,
-                SensorManager.SENSOR_DELAY_NORMAL
+                SensorManager.SENSOR_DELAY_UI
             )
         }
     }
@@ -165,8 +166,13 @@ class CameraActivity : AppCompatActivity() {
 
     @SuppressLint("MissingPermission")
     private fun getLastLocation(callback: (location: Location?) -> Unit) {
-        val result = fusedLocationClient.lastLocation.result
-        callback(result)
+        val locationRequest = CurrentLocationRequest.Builder().build()
+
+        fusedLocationClient.getCurrentLocation(
+            locationRequest, null
+        ).addOnCompleteListener {
+            callback(it.result)
+        }
     }
 
     private fun startCamera() {
@@ -207,7 +213,9 @@ class CameraActivity : AppCompatActivity() {
         private const val REQUEST_CODE_PERMISSIONS = 10
 
         private val REQUIRED_PERMISSIONS = mutableListOf(
-            Manifest.permission.CAMERA
+            Manifest.permission.CAMERA,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
         ).toTypedArray()
 
         const val SUCCESS_RESULT_CODE = 15
