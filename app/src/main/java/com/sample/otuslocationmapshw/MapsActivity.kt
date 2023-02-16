@@ -14,12 +14,14 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.sample.otuslocationmapshw.camera.CameraActivity
 import com.sample.otuslocationmapshw.data.utils.LocationDataUtils
 import com.sample.otuslocationmapshw.databinding.ActivityMapsBinding
 import java.io.File
+
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -44,6 +46,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         // TODO("Вызвать инициализацию карты")
+        mapFragment.getMapAsync(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -84,11 +87,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     }), 64, 64, false
             )
             // TODO("Указать pinBitmap как иконку для маркера")
+            val myMarker = BitmapDescriptorFactory.fromBitmap(pinBitmap)
             map.addMarker(
                 MarkerOptions()
-                    .position(point)
+                    .position(point).icon(myMarker)
             )
             // TODO("Передвинуть карту к местоположению последнего фото")
+            val cameraPosition = CameraPosition.Builder()
+                .target(point)
+                .zoom(5f)
+                .bearing(45f)
+                .tilt(20f)
+                .build()
+            val cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition)
+            map.animateCamera(cameraUpdate)
         }
     }
 }

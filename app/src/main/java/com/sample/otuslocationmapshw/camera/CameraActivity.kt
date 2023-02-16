@@ -16,13 +16,16 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCapture.OnImageSavedCallback
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.common.util.concurrent.ListenableFuture
 import com.sample.otuslocationmapshw.databinding.ActivityCameraBinding
 import java.io.File
@@ -63,7 +66,12 @@ class CameraActivity : AppCompatActivity() {
 
         // TODO("Получить экземпляр SensorManager")
         // TODO("Добавить проверку на наличие датчика акселерометра и присвоить значение tiltSensor")
-        tiltSensor = ...
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) == null)
+        {
+            tiltSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        }
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
         }, ContextCompat.getMainExecutor(this))
@@ -85,8 +93,16 @@ class CameraActivity : AppCompatActivity() {
     }
 
     // TODO("Подписаться на получение событий обновления датчика")
+    override fun onResume() {
+        super.onResume()
+        sensorManager.registerListener(sensorEventListener, tiltSensor, SensorManager.SENSOR_DELAY_NORMAL)
+    }
 
     // TODO("Остановить получение событий от датчика")
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(sensorEventListener)
+    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -121,18 +137,50 @@ class CameraActivity : AppCompatActivity() {
             val filePath = folderPath + SimpleDateFormat(FILENAME_FORMAT, Locale.getDefault()).format(Date())
 
             // TODO("4. Добавить установку местоположения в метаданные фото")
-            val outputFileOptions = ImageCapture.OutputFileOptions.Builder(File(filePath))
+            val Metadata = ImageCapture.Metadata()
+            Metadata.setLocation(location)
+            val outputFileOptions = ImageCapture.OutputFileOptions.Builder(File(filePath)).setMetadata(Metadata)
                 .build()
 
             // TODO("Добавить вызов CameraX для фото")
             // TODO("Вывести Toast о том, что фото успешно сохранено и закрыть текущее активити c указанием кода результата SUCCESS_RESULT_CODE")
-            imageCapture...
+            imageCapture.takePicture(outputFileOptions, ContextCompat.getMainExecutor(this),
+
+                object : ImageCapture.OnImageSavedCallback {
+                    override fun onError(exc: ImageCaptureException) {
+                        Log.e(TAG, "Что-то пошло не так: ${exc.message}", exc)
+                    }
+
+                    override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                        val msg = "Удачное сохранение фото"
+                        Toast.makeText(this@CameraActivity, msg, Toast.LENGTH_SHORT).show()
+                        this@CameraActivity.setResult(SUCCESS_RESULT_CODE)
+                        finish()
+                    }
+                }
+
+                )
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun getLastLocation(callback: (location: Location?) -> Unit) {
         // TODO("Добавить получение местоположения от fusedLocationClient и передать результат в callback после получения")
+        val currentLocationRequest = CurrentLocationRequest.Builder().setPriority(Priority.PRIORITY_HIGH_ACCURACY).build()
+        fusedLocationClient.getCurrentLocation(currentLocationRequest, null).addOnSuccessListener {
+                location -> location?.let {
+            if (location != null) {
+                Toast.makeText(this, "current location:" + location.toString(), Toast.LENGTH_SHORT).show()
+                return@addOnSuccessListener callback.invoke(location)
+            }
+            else
+            {
+                Toast.makeText(this, "current Location == Null", Toast.LENGTH_SHORT).show()
+                getLastLocation(location)
+
+            }
+        }
+        }
     }
 
     private fun startCamera() {
@@ -173,7 +221,7 @@ class CameraActivity : AppCompatActivity() {
         private const val REQUEST_CODE_PERMISSIONS = 10
         // TODO("Указать набор требуемых разрешений")
         private val REQUIRED_PERMISSIONS = mutableListOf(
-            ...
+            Manifest.permission.CAMERA
         ).toTypedArray()
 
         const val SUCCESS_RESULT_CODE = 15
