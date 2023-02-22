@@ -33,6 +33,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     ) {
         if (it.resultCode == CameraActivity.SUCCESS_RESULT_CODE) {
             // TODO("Обновить точки на карте при получении результата от камеры")
+            showPreviewsOnMap()
         }
     }
 

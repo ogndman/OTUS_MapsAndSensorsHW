@@ -141,9 +141,7 @@ class CameraActivity : AppCompatActivity() {
             val metadata = ImageCapture.Metadata()
             metadata.location = location
 
-            val outputFileOptions = ImageCapture.OutputFileOptions.Builder(File(filePath))
-                .build()
-
+            val outputFileOptions = ImageCapture.OutputFileOptions.Builder(File(filePath)).setMetadata(metadata).build()
 
 
             // TODO("Добавить вызов CameraX для фото")
