@@ -14,6 +14,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.sample.otuslocationmapshw.camera.CameraActivity
@@ -32,6 +33,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     ) {
         if (it.resultCode == CameraActivity.SUCCESS_RESULT_CODE) {
             // TODO("Обновить точки на карте при получении результата от камеры")
+            showPreviewsOnMap()
         }
     }
 
@@ -43,7 +45,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
-        // TODO("Вызвать инициализацию карты")
+        mapFragment.getMapAsync(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -87,8 +89,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             map.addMarker(
                 MarkerOptions()
                     .position(point)
+                    .icon(BitmapDescriptorFactory.fromBitmap(pinBitmap))
             )
             // TODO("Передвинуть карту к местоположению последнего фото")
+
+            map.moveCamera(CameraUpdateFactory.newCameraPosition(CameraPosition(point,15F, 30F, 90F)))
         }
     }
 }
