@@ -176,7 +176,7 @@ class CameraActivity : AppCompatActivity() {
                 else
                 {
                     Toast.makeText(this, "current Location == Null", Toast.LENGTH_SHORT).show()
-                    //getLastLocation(location)
+                   // getLastLocation(location)
 
                 }
             }
