@@ -68,7 +68,7 @@ class CameraActivity : AppCompatActivity() {
         // TODO("Добавить проверку на наличие датчика акселерометра и присвоить значение tiltSensor")
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) == null)
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null)
         {
             tiltSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         }
@@ -167,19 +167,19 @@ class CameraActivity : AppCompatActivity() {
     private fun getLastLocation(callback: (location: Location?) -> Unit) {
         // TODO("Добавить получение местоположения от fusedLocationClient и передать результат в callback после получения")
         val currentLocationRequest = CurrentLocationRequest.Builder().setPriority(Priority.PRIORITY_HIGH_ACCURACY).build()
-        fusedLocationClient.getCurrentLocation(currentLocationRequest, null).addOnSuccessListener {
-                location -> location?.let {
-            if (location != null) {
-                Toast.makeText(this, "current location:" + location.toString(), Toast.LENGTH_SHORT).show()
-                return@addOnSuccessListener callback.invoke(location)
-            }
-            else
-            {
-                Toast.makeText(this, "current Location == Null", Toast.LENGTH_SHORT).show()
-                getLastLocation(location)
+            fusedLocationClient.getCurrentLocation(currentLocationRequest, null).addOnSuccessListener {
+                    location -> location?.let {
+                if (location != null) {
+                    Toast.makeText(this, "current location:" + location.toString(), Toast.LENGTH_SHORT).show()
+                    return@addOnSuccessListener callback.invoke(location)
+                }
+                else
+                {
+                    Toast.makeText(this, "current Location == Null", Toast.LENGTH_SHORT).show()
+                    //getLastLocation(location)
 
+                }
             }
-        }
         }
     }
 
@@ -221,7 +221,9 @@ class CameraActivity : AppCompatActivity() {
         private const val REQUEST_CODE_PERMISSIONS = 10
         // TODO("Указать набор требуемых разрешений")
         private val REQUIRED_PERMISSIONS = mutableListOf(
-            Manifest.permission.CAMERA
+            Manifest.permission.CAMERA,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
         ).toTypedArray()
 
         const val SUCCESS_RESULT_CODE = 15
