@@ -13,6 +13,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
@@ -44,6 +45,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         // TODO("Вызвать инициализацию карты")
+        mapFragment.getMapAsync(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -87,8 +89,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             map.addMarker(
                 MarkerOptions()
                     .position(point)
+                    .icon(BitmapDescriptorFactory.fromBitmap(pinBitmap))
             )
             // TODO("Передвинуть карту к местоположению последнего фото")
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(point, 15f))
         }
     }
 }

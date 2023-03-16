@@ -1,6 +1,7 @@
 package com.sample.otuslocationmapshw.camera
 
 import android.Manifest
+import android.Manifest.permission.*
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
@@ -8,6 +9,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.hardware.SensorManager.SENSOR_DELAY_NORMAL
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
@@ -62,8 +64,9 @@ class CameraActivity : AppCompatActivity() {
         cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         // TODO("Получить экземпляр SensorManager")
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         // TODO("Добавить проверку на наличие датчика акселерометра и присвоить значение tiltSensor")
-        tiltSensor = ...
+        tiltSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
         }, ContextCompat.getMainExecutor(this))
@@ -85,8 +88,17 @@ class CameraActivity : AppCompatActivity() {
     }
 
     // TODO("Подписаться на получение событий обновления датчика")
-
+    override fun onResume() {
+        super.onResume()
+        tiltSensor?.let {
+            sensorManager.registerListener(sensorEventListener,tiltSensor,SensorManager.SENSOR_DELAY_NORMAL)
+        }
+    }
     // TODO("Остановить получение событий от датчика")
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(sensorEventListener)
+    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -121,18 +133,45 @@ class CameraActivity : AppCompatActivity() {
             val filePath = folderPath + SimpleDateFormat(FILENAME_FORMAT, Locale.getDefault()).format(Date())
 
             // TODO("4. Добавить установку местоположения в метаданные фото")
+            ImageCapture.Metadata().location = location
             val outputFileOptions = ImageCapture.OutputFileOptions.Builder(File(filePath))
+                .setMetadata(ImageCapture.Metadata())
                 .build()
+
 
             // TODO("Добавить вызов CameraX для фото")
             // TODO("Вывести Toast о том, что фото успешно сохранено и закрыть текущее активити c указанием кода результата SUCCESS_RESULT_CODE")
-            imageCapture...
+            imageCapture.takePicture(
+                outputFileOptions,
+                ContextCompat.getMainExecutor(this),
+                object : ImageCapture.OnImageSavedCallback {
+                    override fun onError(exc: ImageCaptureException) {
+                        Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+                    }
+
+                    override fun onImageSaved(output: ImageCapture.OutputFileResults){
+                        val msg = "Photo capture succeeded: ${output.savedUri}"
+                        Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+                        Log.d(TAG, msg)
+                        setResult(SUCCESS_RESULT_CODE)
+                        finish()
+                    }
+                }
+            )
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun getLastLocation(callback: (location: Location?) -> Unit) {
         // TODO("Добавить получение местоположения от fusedLocationClient и передать результат в callback после получения")
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            // результат может быть null
+            location?.let {
+                Log.d("LAST LOCATION", location.toString())
+
+                callback.invoke(location)
+            } ?: Log.d("LAST LOCATION", "null")
+        }
     }
 
     private fun startCamera() {
@@ -172,9 +211,8 @@ class CameraActivity : AppCompatActivity() {
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val REQUEST_CODE_PERMISSIONS = 10
         // TODO("Указать набор требуемых разрешений")
-        private val REQUIRED_PERMISSIONS = mutableListOf(
-            ...
-        ).toTypedArray()
+        private val REQUIRED_PERMISSIONS = mutableListOf(ACCESS_COARSE_LOCATION,ACCESS_FINE_LOCATION,CAMERA,
+            RECORD_AUDIO).toTypedArray()
 
         const val SUCCESS_RESULT_CODE = 15
     }
