@@ -9,13 +9,12 @@ import android.view.MenuItem
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.exifinterface.media.ExifInterface
+import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.sample.otuslocationmapshw.camera.CameraActivity
 import com.sample.otuslocationmapshw.data.utils.LocationDataUtils
 import com.sample.otuslocationmapshw.databinding.ActivityMapsBinding
@@ -43,7 +42,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
-        // TODO("Вызвать инициализацию карты")
+        mapFragment.getMapAsync(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -87,8 +86,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             map.addMarker(
                 MarkerOptions()
                     .position(point)
+                    .icon(BitmapDescriptorFactory.fromBitmap(pinBitmap))
             )
-            // TODO("Передвинуть карту к местоположению последнего фото")
+            map.moveCamera(
+                CameraUpdateFactory.newCameraPosition(
+                    CameraPosition(
+                        point,
+                        15.5f,
+                        25f,
+                        0f
+                    )
+                )
+            )
         }
     }
 }
