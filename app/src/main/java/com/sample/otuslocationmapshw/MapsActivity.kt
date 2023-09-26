@@ -13,6 +13,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
@@ -31,7 +32,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         ActivityResultContracts.StartActivityForResult()
     ) {
         if (it.resultCode == CameraActivity.SUCCESS_RESULT_CODE) {
-            // TODO("Обновить точки на карте при получении результата от камеры")
+            showPreviewsOnMap()
         }
     }
 
@@ -41,9 +42,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
         // TODO("Вызвать инициализацию карты")
+       val mapFragment = (supportFragmentManager
+            .findFragmentById(R.id.map) as SupportMapFragment)
+        mapFragment.getMapAsync(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -81,14 +83,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     it.path,
                     BitmapFactory.Options().apply {
                         inPreferredConfig = Bitmap.Config.ARGB_8888
-                    }), 64, 64, false
+                    }), 128, 128, false
             )
             // TODO("Указать pinBitmap как иконку для маркера")
             map.addMarker(
                 MarkerOptions()
                     .position(point)
+                    .icon(BitmapDescriptorFactory.fromBitmap(pinBitmap)),
             )
             // TODO("Передвинуть карту к местоположению последнего фото")
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(point, 20f))
         }
     }
 }
