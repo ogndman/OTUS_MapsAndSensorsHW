@@ -20,6 +20,7 @@ import com.sample.otuslocationmapshw.camera.CameraActivity
 import com.sample.otuslocationmapshw.data.utils.LocationDataUtils
 import com.sample.otuslocationmapshw.databinding.ActivityMapsBinding
 import java.io.File
+import com.google.android.gms.maps.model.CameraPosition
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -31,7 +32,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         ActivityResultContracts.StartActivityForResult()
     ) {
         if (it.resultCode == CameraActivity.SUCCESS_RESULT_CODE) {
-            // TODO("Обновить точки на карте при получении результата от камеры")
+            showPreviewsOnMap()
         }
     }
 
@@ -43,7 +44,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
-        // TODO("Вызвать инициализацию карты")
+        mapFragment.getMapAsync(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -65,7 +66,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
-
         showPreviewsOnMap()
     }
 
@@ -81,14 +81,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     it.path,
                     BitmapFactory.Options().apply {
                         inPreferredConfig = Bitmap.Config.ARGB_8888
-                    }), 64, 64, false
+                    }), 128, 128, false
             )
-            // TODO("Указать pinBitmap как иконку для маркера")
             map.addMarker(
                 MarkerOptions()
                     .position(point)
+                    .icon(BitmapDescriptorFactory.fromBitmap(pinBitmap))
             )
-            // TODO("Передвинуть карту к местоположению последнего фото")
+            map.animateCamera(
+                CameraUpdateFactory.newCameraPosition(
+                    CameraPosition.Builder()
+                        .target(point)
+                        .zoom(15F)
+                        .build()
+                )
+            )
         }
     }
 }
