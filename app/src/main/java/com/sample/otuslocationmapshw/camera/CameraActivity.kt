@@ -4,6 +4,7 @@ import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.Manifest.permission.CAMERA
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -65,9 +66,9 @@ class CameraActivity : AppCompatActivity() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
-        // TODO("Получить экземпляр SensorManager")
-        // TODO("Добавить проверку на наличие датчика акселерометра и присвоить значение tiltSensor")
-        //tiltSensor = ...
+        sensorManager = getSystemService((Context.SENSOR_SERVICE)) as SensorManager
+        tiltSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
         }, ContextCompat.getMainExecutor(this))
@@ -88,9 +89,23 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
-    // TODO("Подписаться на получение событий обновления датчика")
+    // Лучшим методом для подписки на получение данных от датчиков является метод onResume(),
+    // который вызывается, когда активность становится видимой для пользователя.
+    override fun onResume() {
+        super.onResume()
+        sensorManager.registerListener(
+            sensorEventListener,
+            tiltSensor,
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
+    }
 
-    // TODO("Остановить получение событий от датчика")
+    // Для безопасной отписки от получения данных от датчиков используйте метод onPause(),
+    // который вызывается, когда активность уходит в фоновый режим или перестает быть видимой для пользователя.
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(sensorEventListener)
+    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,

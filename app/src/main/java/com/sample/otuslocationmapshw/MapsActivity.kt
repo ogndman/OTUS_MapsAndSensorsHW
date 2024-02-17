@@ -36,7 +36,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         ActivityResultContracts.StartActivityForResult()
     ) {
         if (it.resultCode == CameraActivity.SUCCESS_RESULT_CODE) {
-            // TODO("Обновить точки на карте при получении результата от камеры")
+            showPreviewsOnMap()
         }
     }
 
@@ -48,7 +48,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync{it->
+        mapFragment.getMapAsync { it ->
             Log.i(TAG, "Maps is ready")
             onMapReady(it)
         }
@@ -65,6 +65,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 cameraForResultLauncher.launch(Intent(this, CameraActivity::class.java))
                 true
             }
+
             else -> {
                 super.onOptionsItemSelected(item)
             }

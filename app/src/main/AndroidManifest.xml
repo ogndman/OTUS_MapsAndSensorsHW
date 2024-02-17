@@ -16,6 +16,9 @@
     <uses-feature android:name="android.hardware.camera.flash" />
     <!--  Это указывает, что ваше приложение использует переднюю камеру устройства (если она доступна) -->
     <uses-feature android:name="android.hardware.camera.front" />
+    <!--  Это указывает, что ваше приложение использует акселерометр -->
+    <uses-feature  android:name="android.hardware.sensor.accelerometer"
+    android:required="true" />
 
     <application
         android:allowBackup="true"
