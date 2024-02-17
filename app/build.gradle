@@ -4,6 +4,11 @@ plugins {
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
 
+// Read properties file
+def keysPropertiesFile = rootProject.file("api_key.properties")
+def keysProperties = new Properties()
+keysProperties.load(new FileInputStream(keysPropertiesFile))
+
 android {
     namespace 'com.sample.otuslocationmapshw'
     compileSdk 33
@@ -19,8 +24,13 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "GMAPS_API", "\"${keysProperties['GMAPS_API_KEY']}\"")
+        }
+
         release {
             minifyEnabled false
+            buildConfigField("String", "GMAPS_API", "\"${keysProperties['GMAPS_API_KEY']}\"")
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
