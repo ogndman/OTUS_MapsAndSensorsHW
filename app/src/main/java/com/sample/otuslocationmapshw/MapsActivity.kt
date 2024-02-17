@@ -1,9 +1,11 @@
 package com.sample.otuslocationmapshw
 
+
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,6 +22,8 @@ import com.sample.otuslocationmapshw.camera.CameraActivity
 import com.sample.otuslocationmapshw.data.utils.LocationDataUtils
 import com.sample.otuslocationmapshw.databinding.ActivityMapsBinding
 import java.io.File
+
+private const val TAG = "MapsActivity"
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -43,7 +47,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
-        // TODO("Вызвать инициализацию карты")
+        mapFragment.getMapAsync{it->
+            Log.i(TAG, "Maps is ready")
+            onMapReady(it)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -65,7 +72,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
-
         showPreviewsOnMap()
     }
 

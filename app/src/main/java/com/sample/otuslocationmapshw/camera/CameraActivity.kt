@@ -1,6 +1,9 @@
 package com.sample.otuslocationmapshw.camera
 
 import android.Manifest
+import android.Manifest.permission.ACCESS_COARSE_LOCATION
+import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.Manifest.permission.CAMERA
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
@@ -63,7 +66,7 @@ class CameraActivity : AppCompatActivity() {
 
         // TODO("Получить экземпляр SensorManager")
         // TODO("Добавить проверку на наличие датчика акселерометра и присвоить значение tiltSensor")
-        tiltSensor = ...
+        //tiltSensor = ...
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
         }, ContextCompat.getMainExecutor(this))
@@ -173,7 +176,9 @@ class CameraActivity : AppCompatActivity() {
         private const val REQUEST_CODE_PERMISSIONS = 10
         // TODO("Указать набор требуемых разрешений")
         private val REQUIRED_PERMISSIONS = mutableListOf(
-            ...
+            ACCESS_COARSE_LOCATION,
+            ACCESS_FINE_LOCATION,
+            CAMERA
         ).toTypedArray()
 
         const val SUCCESS_RESULT_CODE = 15
