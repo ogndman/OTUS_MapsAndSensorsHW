@@ -1,6 +1,5 @@
 package com.sample.otuslocationmapshw.camera
 
-import android.Manifest
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.Manifest.permission.CAMERA
@@ -104,9 +103,7 @@ class CameraActivity : AppCompatActivity() {
                 startCamera()
             } else {
                 Toast.makeText(
-                    this,
-                    "Permissions not granted by the user.",
-                    Toast.LENGTH_SHORT
+                    this, "Permissions not granted by the user.", Toast.LENGTH_SHORT
                 ).show()
                 finish()
             }
@@ -126,20 +123,26 @@ class CameraActivity : AppCompatActivity() {
             val filePath =
                 folderPath + SimpleDateFormat(FILENAME_FORMAT, Locale.getDefault()).format(Date())
 
-            // TODO("4. Добавить установку местоположения в метаданные фото")
-            val outputFileOptions = ImageCapture.OutputFileOptions.Builder(File(filePath))
-                .build()
+            // Создаем объект метаданных для фотографии
+            val metadata = ImageCapture.Metadata().apply {
+                // Получаем текущее местоположение и добавляем его в метаданные, если оно доступно
+                getLastLocation { location ->
+                    if (location != null) {
+                        this.location = location
+                    }
+                }
+            }
 
-            imageCapture.takePicture(
-                outputFileOptions,
+            val outputFileOptions = ImageCapture.OutputFileOptions.Builder(File(filePath))
+                .setMetadata(metadata).build()
+
+            imageCapture.takePicture(outputFileOptions,
                 ContextCompat.getMainExecutor(this),
                 object : ImageCapture.OnImageSavedCallback {
                     override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                         // Вывести Toast о том, что фото успешно сохранено
                         Toast.makeText(
-                            this@CameraActivity,
-                            "Фото успешно сохранено",
-                            Toast.LENGTH_SHORT
+                            this@CameraActivity, "Фото успешно сохранено", Toast.LENGTH_SHORT
                         ).show()
 
                         // Закрыть текущую активити с указанием кода результата SUCCESS_RESULT_CODE
@@ -149,22 +152,18 @@ class CameraActivity : AppCompatActivity() {
 
                     override fun onError(exception: ImageCaptureException) {
                         Toast.makeText(
-                            this@CameraActivity,
-                            "Не удалось сохранить фото",
-                            Toast.LENGTH_SHORT
+                            this@CameraActivity, "Не удалось сохранить фото", Toast.LENGTH_SHORT
                         ).show()
                     }
-                }
-            )
+                })
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun getLastLocation(callback: (location: Location?) -> Unit) {
-        val locationRequest = CurrentLocationRequest.Builder()
-            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-            .setGranularity(Granularity.GRANULARITY_FINE)
-            .build()
+        val locationRequest =
+            CurrentLocationRequest.Builder().setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .setGranularity(Granularity.GRANULARITY_FINE).build()
         fusedLocationClient.getCurrentLocation(locationRequest, null).addOnSuccessListener(callback)
     }
 
@@ -173,11 +172,9 @@ class CameraActivity : AppCompatActivity() {
         cameraProviderFuture.addListener({
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-            val preview = Preview.Builder()
-                .build()
-                .also {
-                    it.setSurfaceProvider(binding.cameraPreview.surfaceProvider)
-                }
+            val preview = Preview.Builder().build().also {
+                it.setSurfaceProvider(binding.cameraPreview.surfaceProvider)
+            }
 
             imageCapture = ImageCapture.Builder().build()
 
@@ -205,9 +202,7 @@ class CameraActivity : AppCompatActivity() {
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = mutableListOf(
-            ACCESS_COARSE_LOCATION,
-            ACCESS_FINE_LOCATION,
-            CAMERA
+            ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION, CAMERA
         ).toTypedArray()
 
         const val SUCCESS_RESULT_CODE = 15

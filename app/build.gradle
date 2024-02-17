@@ -21,6 +21,7 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        resValue "string", "google_maps_api_key", keysProperties['GMAPS_API_KEY']
     }
 
     buildTypes {

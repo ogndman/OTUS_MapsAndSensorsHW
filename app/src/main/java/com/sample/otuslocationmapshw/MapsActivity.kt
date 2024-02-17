@@ -16,6 +16,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.sample.otuslocationmapshw.camera.CameraActivity
@@ -79,9 +80,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         map.clear()
         val folder = File("${filesDir.absolutePath}/photos/")
         folder.listFiles()?.forEach {
+            // Создается объект ExifInterface для текущего файла. ExifInterface используется для чтения метаданных изображения (EXIF).
             val exifInterface = ExifInterface(it)
+            // Вызывается метод getLocationFromExif для получения местоположения из метаданных EXIF изображения.
             val location = locationDataUtils.getLocationFromExif(exifInterface)
+            // Создается объект LatLng, представляющий координаты местоположения изображения (широту и долготу).
             val point = LatLng(location.latitude, location.longitude)
+            // Загружается изображение из файла и масштабируется до требуемого размера (64x64 пикселя).
             val pinBitmap = Bitmap.createScaledBitmap(
                 BitmapFactory.decodeFile(
                     it.path,
@@ -89,12 +94,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         inPreferredConfig = Bitmap.Config.ARGB_8888
                     }), 64, 64, false
             )
-            // TODO("Указать pinBitmap как иконку для маркера")
+            // Создается объект BitmapDescriptor с помощью метода fromBitmap() фабрики
+            val icon = BitmapDescriptorFactory.fromBitmap(pinBitmap)
             map.addMarker(
                 MarkerOptions()
                     .position(point)
+                    .icon(icon)
             )
-            // TODO("Передвинуть карту к местоположению последнего фото")
+            // Передвигаем камеру к позиции маркера
+            val cameraPosition = CameraPosition.Builder()
+                .target(point) // Устанавливаем цель камеры в координаты местоположения фото
+                .zoom(15f) // Устанавливаем уровень масштабирования
+                .build()
+            // Перемещаем камеру
+            map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
         }
     }
 }
