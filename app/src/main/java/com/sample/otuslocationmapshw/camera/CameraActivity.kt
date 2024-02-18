@@ -70,7 +70,10 @@ class CameraActivity : AppCompatActivity() {
 
         // TODO("Получить экземпляр SensorManager")
         // TODO("Добавить проверку на наличие датчика акселерометра и присвоить значение tiltSensor")
-        //  tiltSensor = ...
+
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        tiltSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
         }, ContextCompat.getMainExecutor(this))
@@ -92,8 +95,20 @@ class CameraActivity : AppCompatActivity() {
     }
 
     // TODO("Подписаться на получение событий обновления датчика")
+    override fun onResume() {
+        super.onResume()
+        sensorManager.registerListener(
+            sensorEventListener,
+            tiltSensor,
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
+    }
 
     // TODO("Остановить получение событий от датчика")
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(sensorEventListener)
+    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
