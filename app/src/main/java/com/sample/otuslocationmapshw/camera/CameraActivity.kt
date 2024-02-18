@@ -30,6 +30,7 @@ import com.google.android.gms.location.Granularity
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.common.util.concurrent.ListenableFuture
+import com.sample.otuslocationmapshw.R
 import com.sample.otuslocationmapshw.databinding.ActivityCameraBinding
 import java.io.File
 import java.text.SimpleDateFormat
@@ -141,6 +142,32 @@ class CameraActivity : AppCompatActivity() {
             // TODO("Добавить вызов CameraX для фото")
             // TODO("Вывести Toast о том, что фото успешно сохранено и закрыть текущее активити c указанием кода результата SUCCESS_RESULT_CODE")
             //  imageCapture...
+
+            imageCapture.takePicture(
+                outputFileOptions,
+                ContextCompat.getMainExecutor(this),
+                object : ImageCapture.OnImageSavedCallback {
+                    override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                        Toast.makeText(
+                            this@CameraActivity,
+                            getString(R.string.save_photo),
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        setResult(SUCCESS_RESULT_CODE)
+                        finish()
+                    }
+
+                    override fun onError(exception: ImageCaptureException) {
+                        Toast.makeText(
+                            this@CameraActivity,
+                            getString(R.string.save_photo_error),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+
+                }
+            )
         }
     }
 
