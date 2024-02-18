@@ -24,8 +24,11 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.Granularity
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.common.util.concurrent.ListenableFuture
 import com.sample.otuslocationmapshw.databinding.ActivityCameraBinding
 import java.io.File
@@ -123,8 +126,16 @@ class CameraActivity : AppCompatActivity() {
             }
             val filePath = folderPath + SimpleDateFormat(FILENAME_FORMAT, Locale.getDefault()).format(Date())
 
+            val metaDataLocation = ImageCapture.Metadata().apply {
+                getLastLocation { location ->
+                    if (location != null)
+                        this.location = location
+                }
+            }
+
             // TODO("4. Добавить установку местоположения в метаданные фото")
             val outputFileOptions = ImageCapture.OutputFileOptions.Builder(File(filePath))
+                .setMetadata(metaDataLocation)
                 .build()
 
             // TODO("Добавить вызов CameraX для фото")
@@ -136,6 +147,10 @@ class CameraActivity : AppCompatActivity() {
     @SuppressLint("MissingPermission")
     private fun getLastLocation(callback: (location: Location?) -> Unit) {
         // TODO("Добавить получение местоположения от fusedLocationClient и передать результат в callback после получения")
+        val locationRequest = CurrentLocationRequest.Builder().setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+            .setGranularity(Granularity.GRANULARITY_FINE).build()
+
+        fusedLocationClient.getCurrentLocation(locationRequest, null).addOnSuccessListener(callback)
     }
 
     private fun startCamera() {
