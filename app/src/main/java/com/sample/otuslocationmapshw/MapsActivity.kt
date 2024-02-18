@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.result.contract.ActivityResultContracts
@@ -44,6 +45,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         // TODO("Вызвать инициализацию карты")
+        mapFragment.getMapAsync {
+            Log.d(TAG, "Map is ready")
+            onMapReady(it)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -90,5 +95,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             )
             // TODO("Передвинуть карту к местоположению последнего фото")
         }
+    }
+
+    companion object {
+        private const val TAG = "MapsActivity"
     }
 }
