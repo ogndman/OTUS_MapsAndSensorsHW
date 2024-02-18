@@ -3,4 +3,6 @@
     <string name="title_activity_maps">MapsActivity</string>
     <string name="action_add">Добавить</string>
     <string name="aligne_your_phone">Рекомендуем разместить телефон прямо</string>
+    <string name="save_photo_error">Не удалось сохранить фото</string>
+    <string name="save_photo">Фото успешно сохранено</string>
 </resources>

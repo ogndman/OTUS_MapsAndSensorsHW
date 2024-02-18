@@ -2,6 +2,24 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!--До 3х кв км-->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!--Точное место-->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!--Приложение требует камеру устройства.-->
+    <uses-feature android:name="android.hardware.camera" />
+    <!--Приложение использует автофокусировку камеры.-->
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <!--Приложение использует вспышку камеры-->
+    <uses-feature android:name="android.hardware.camera.flash" />
+    <!--Приложение использует переднюю камеру устройства (если она доступна)-->
+    <uses-feature android:name="android.hardware.camera.front" />
+
+    <!-- Разрешение на акселерометр-->
+    <uses-feature  android:name="android.hardware.sensor.accelerometer" android:required="true" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -25,7 +43,7 @@
         -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_API_KEY" />
+            android:value="@string/map_api_key" />
 
         <activity
             android:name=".MapsActivity"
