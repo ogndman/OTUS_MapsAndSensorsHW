@@ -23,6 +23,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.common.util.concurrent.ListenableFuture
 import com.sample.otuslocationmapshw.databinding.ActivityCameraBinding
 import java.io.File
@@ -63,7 +65,8 @@ class CameraActivity : AppCompatActivity() {
 
         // TODO("Получить экземпляр SensorManager")
         // TODO("Добавить проверку на наличие датчика акселерометра и присвоить значение tiltSensor")
-        tiltSensor = ...
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        tiltSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
         }, ContextCompat.getMainExecutor(this))
@@ -85,8 +88,16 @@ class CameraActivity : AppCompatActivity() {
     }
 
     // TODO("Подписаться на получение событий обновления датчика")
+    override fun onResume() {
+        super.onResume()
+        sensorManager.registerListener(sensorEventListener, tiltSensor, SensorManager.SENSOR_DELAY_NORMAL)
+    }
 
     // TODO("Остановить получение событий от датчика")
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(sensorEventListener)
+    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -122,17 +133,49 @@ class CameraActivity : AppCompatActivity() {
 
             // TODO("4. Добавить установку местоположения в метаданные фото")
             val outputFileOptions = ImageCapture.OutputFileOptions.Builder(File(filePath))
+                .setMetadata(ImageCapture.Metadata().apply {
+                    this.location = location
+                })
                 .build()
 
             // TODO("Добавить вызов CameraX для фото")
             // TODO("Вывести Toast о том, что фото успешно сохранено и закрыть текущее активити c указанием кода результата SUCCESS_RESULT_CODE")
-            imageCapture...
+            imageCapture.takePicture(
+                outputFileOptions,
+                ContextCompat.getMainExecutor(this),
+                object : ImageCapture.OnImageSavedCallback {
+                    override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                        Toast.makeText(
+                            applicationContext,
+                            "Удачное сохранение фото!",
+                            Toast.LENGTH_SHORT,
+                        ).show()
+
+                        setResult(SUCCESS_RESULT_CODE)
+                        finish()
+                    }
+
+                    override fun onError(exception: ImageCaptureException) {
+                        Toast.makeText(
+                            applicationContext,
+                            "Произошла ошибка сохранения фото! Попробуйте ещё раз.",
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                    }
+                }
+            )
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun getLastLocation(callback: (location: Location?) -> Unit) {
         // TODO("Добавить получение местоположения от fusedLocationClient и передать результат в callback после получения")
+        fusedLocationClient
+            .getCurrentLocation(
+                Priority.PRIORITY_HIGH_ACCURACY,
+                CancellationTokenSource().token,
+            )
+            .addOnSuccessListener(callback)
     }
 
     private fun startCamera() {
@@ -173,7 +216,9 @@ class CameraActivity : AppCompatActivity() {
         private const val REQUEST_CODE_PERMISSIONS = 10
         // TODO("Указать набор требуемых разрешений")
         private val REQUIRED_PERMISSIONS = mutableListOf(
-            ...
+            Manifest.permission.CAMERA,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION,
         ).toTypedArray()
 
         const val SUCCESS_RESULT_CODE = 15

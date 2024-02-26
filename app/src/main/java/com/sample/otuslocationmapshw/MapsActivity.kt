@@ -32,6 +32,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     ) {
         if (it.resultCode == CameraActivity.SUCCESS_RESULT_CODE) {
             // TODO("Обновить точки на карте при получении результата от камеры")
+            showPreviewsOnMap()
         }
     }
 
@@ -44,6 +45,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         // TODO("Вызвать инициализацию карты")
+        mapFragment.getMapAsync(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -72,6 +74,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun showPreviewsOnMap() {
         map.clear()
         val folder = File("${filesDir.absolutePath}/photos/")
+        var lastFilePosition: LatLng? = null
         folder.listFiles()?.forEach {
             val exifInterface = ExifInterface(it)
             val location = locationDataUtils.getLocationFromExif(exifInterface)
@@ -86,9 +89,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             // TODO("Указать pinBitmap как иконку для маркера")
             map.addMarker(
                 MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromBitmap(pinBitmap))
                     .position(point)
             )
             // TODO("Передвинуть карту к местоположению последнего фото")
+            lastFilePosition = point
+        }
+
+        lastFilePosition?.let {
+            map.animateCamera(CameraUpdateFactory.newLatLng(it))
         }
     }
 }
