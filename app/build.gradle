@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace 'com.sample.otuslocationmapshw'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.sample.otuslocationmapshw"
         minSdk 23
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -36,6 +36,13 @@ android {
     }
 }
 
+secrets {
+    propertiesFileName = "secrets.properties"
+    defaultPropertiesFileName = "local.defaults.properties"
+
+    ignoreList.add("keyToIgnore") // Ignore the key "keyToIgnore"
+    ignoreList.add("sdk.*")       // Ignore all keys matching the regexp "sdk.*"
+}
 dependencies {
 
     implementation 'androidx.core:core-ktx:1.7.0'
