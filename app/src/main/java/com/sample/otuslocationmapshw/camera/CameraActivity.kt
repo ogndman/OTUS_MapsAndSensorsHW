@@ -8,6 +8,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.hardware.SensorManager.SENSOR_DELAY_UI
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
@@ -22,6 +23,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LastLocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.common.util.concurrent.ListenableFuture
 import com.sample.otuslocationmapshw.databinding.ActivityCameraBinding
@@ -61,9 +63,9 @@ class CameraActivity : AppCompatActivity() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
-        // TODO("Получить экземпляр SensorManager")
-        // TODO("Добавить проверку на наличие датчика акселерометра и присвоить значение tiltSensor")
-        tiltSensor = ...
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        tiltSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
         }, ContextCompat.getMainExecutor(this))
@@ -84,9 +86,16 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
-    // TODO("Подписаться на получение событий обновления датчика")
-
-    // TODO("Остановить получение событий от датчика")
+    override fun onResume() {
+        super.onResume()
+        if (tiltSensor == null) return
+        sensorManager.registerListener(sensorEventListener, tiltSensor, SENSOR_DELAY_UI)
+    }
+    override fun onPause() {
+        super.onPause()
+        if (tiltSensor == null) return
+        sensorManager.unregisterListener(sensorEventListener)
+    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -120,19 +129,39 @@ class CameraActivity : AppCompatActivity() {
             }
             val filePath = folderPath + SimpleDateFormat(FILENAME_FORMAT, Locale.getDefault()).format(Date())
 
-            // TODO("4. Добавить установку местоположения в метаданные фото")
             val outputFileOptions = ImageCapture.OutputFileOptions.Builder(File(filePath))
+                .setMetadata(ImageCapture.Metadata().apply { this.location = location })
                 .build()
 
-            // TODO("Добавить вызов CameraX для фото")
-            // TODO("Вывести Toast о том, что фото успешно сохранено и закрыть текущее активити c указанием кода результата SUCCESS_RESULT_CODE")
-            imageCapture...
+            imageCapture.takePicture(
+                outputFileOptions,
+                ContextCompat.getMainExecutor(this),
+                object : ImageCapture.OnImageSavedCallback {
+                    override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                        Toast.makeText(
+                            this@CameraActivity,
+                            "Photo has been saved",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        setResult(SUCCESS_RESULT_CODE)
+                        finish()
+                    }
+
+                    override fun onError(e: ImageCaptureException) {
+                        Toast.makeText(
+                            this@CameraActivity,
+                            "Error: ${e.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                })
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun getLastLocation(callback: (location: Location?) -> Unit) {
-        // TODO("Добавить получение местоположения от fusedLocationClient и передать результат в callback после получения")
+        fusedLocationClient.getLastLocation(LastLocationRequest.Builder().build())
+            .addOnCompleteListener { callback.invoke(it.result) }
     }
 
     private fun startCamera() {
@@ -171,9 +200,10 @@ class CameraActivity : AppCompatActivity() {
         private const val TAG = "CameraXApp"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val REQUEST_CODE_PERMISSIONS = 10
-        // TODO("Указать набор требуемых разрешений")
         private val REQUIRED_PERMISSIONS = mutableListOf(
-            ...
+            Manifest.permission.CAMERA,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
         ).toTypedArray()
 
         const val SUCCESS_RESULT_CODE = 15
